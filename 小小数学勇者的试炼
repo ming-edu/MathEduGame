@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小学数学闯关游戏</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Comic Sans MS", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #efe4ff 0%, #dbeafe 55%, #d5f0ff 100%);
+    display: flex; justify-content: center; align-items: center;
+    padding: 24px; overflow-x: hidden; position: relative; color: #46365e;
+  }
+  .hidden { display: none !important; }
+  .mutebtn { position: fixed; top: 14px; right: 14px; z-index: 95; font-size: 22px; background: #fff; border: 2px solid #e3dcf0; border-radius: 999px; width: 46px; height: 46px; cursor: pointer; box-shadow: 0 4px 10px rgba(120,90,180,0.15); }
+  .mutebtn:hover { transform: scale(1.08); }
+  .deco { position: fixed; font-size: 34px; opacity: 0.75; pointer-events: none; animation: float 5s ease-in-out infinite; }
+  .d1 { top: 10%; left: 8%; } .d2 { top: 18%; right: 10%; animation-delay: 1.2s; }
+  .d3 { bottom: 16%; left: 12%; animation-delay: 2.1s; } .d4 { bottom: 10%; right: 14%; animation-delay: 0.6s; }
+  .d5 { top: 55%; left: 5%; font-size: 26px; animation-delay: 1.8s; }
+  @keyframes float { 0%,100%{ transform: translateY(0) rotate(0deg);} 50%{ transform: translateY(-14px) rotate(8deg);} }
+  .wrap { width: 100%; max-width: 960px; text-align: center; position: relative; z-index: 2; }
+  .card { background: #fff; border-radius: 28px; box-shadow: 0 12px 30px rgba(120,90,180,0.18); padding: 26px; text-align: center; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .back { font-size: 16px; color: #7a5bb0; font-weight: bold; background: #fff; padding: 8px 16px; border-radius: 999px; box-shadow: 0 4px 10px rgba(120,90,180,0.15); cursor: pointer; border: none; }
+  .back:hover { transform: scale(1.05); }
+  .scorebar { display: flex; justify-content: center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .chip { font-size: 16px; background: #f3edff; border-radius: 999px; padding: 6px 14px; color: #6a5b8c; }
+  .chip b { color: #3fcb8e; font-size: 19px; }
+  .chip .pink { color: #e0648a; }
+  .sub { font-size: 16px; color: #9a8fb0; }
+  .msg { font-size: 18px; min-height: 28px; color: #5b8def; font-weight: bold; }
+  .toast { position: fixed; top: 90px; left: 50%; transform: translateX(-50%); background: #ffd166; color: #7a4b00; font-weight: bold; font-size: 20px; padding: 10px 22px; border-radius: 999px; box-shadow: 0 8px 18px rgba(0,0,0,0.18); z-index: 80; }
+  .overlay { position: fixed; inset: 0; background: rgba(40,20,60,0.55); display: flex; align-items: center; justify-content: center; z-index: 70; }
+  .overlay .box { position: relative; background: #fff; border-radius: 26px; padding: 34px 40px; text-align: center; max-width: 90vw; }
+  .overlay .box .big { font-size: 60px; }
+  .overlay .box h2 { font-size: 27px; color: #7a5bb0; margin-top: 8px; }
+  .overlay .box .finalscore { font-size: 18px; color: #9a8fb0; margin-top: 8px; }
+  .overlay .box .stars { font-size: 44px; letter-spacing: 6px; margin-top: 6px; }
+  .overlay .box button { margin-top: 20px; font-size: 18px; padding: 10px 24px; border: none; border-radius: 16px; background: #3fcb8e; color: #fff; cursor: pointer; }
+  .overlay .box button.closebtn { position: absolute; top: 6px; right: 12px; margin-top: 0; font-size: 30px; line-height: 1; background: none; color: #b3a8cf; padding: 4px 8px; border-radius: 8px; }
+  .overlay .box button.closebtn:hover { color: #7a5bb0; }
+
+  /* 大厅 */
+  .head { margin-bottom: 30px; }
+  .crown { font-size: 58px; display: block; animation: float 4s ease-in-out infinite; }
+  h1 { font-size: 46px; margin-top: 8px; letter-spacing: 2px; background: linear-gradient(90deg,#7a3fd0,#b45bd8,#5b8def); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cards { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; }
+  .hallcard { width: 260px; min-height: 240px; border-radius: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 26px 20px; text-align: center; background: #fff; border: 3px solid transparent; box-shadow: 0 10px 24px rgba(110,80,180,0.16); transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+  .hallcard:hover { transform: scale(1.07); box-shadow: 0 18px 36px rgba(110,80,180,0.28); }
+  .hallcard .emoji { font-size: 62px; line-height: 1; }
+  .hallcard .name { font-size: 26px; font-weight: bold; margin-top: 16px; color: #46365e; }
+  .hallcard .desc { font-size: 16px; color: #9287ad; margin-top: 10px; }
+  .hallcard .go { margin-top: 18px; font-size: 15px; color: #fff; border-radius: 999px; padding: 7px 18px; font-weight: bold; }
+  .hallcard.c1 { border-color: #ffd3df; } .hallcard.c1:hover { border-color: #ff8fb1; } .hallcard.c1 .go { background: #ff8fb1; }
+  .hallcard.c2 { border-color: #c5e8ff; } .hallcard.c2:hover { border-color: #5b9df0; } .hallcard.c2 .go { background: #5b9df0; }
+  .hallcard.c3 { border-color: #c9f2df; } .hallcard.c3:hover { border-color: #3fcb8e; } .hallcard.c3 .go { background: #3fcb8e; }
+  .foot { margin-top: 34px; font-size: 15px; color: #a89cc5; }
+
+  /* 勇者打怪 */
+  .arena { display: flex; justify-content: space-around; align-items: flex-end; margin: 16px 0 4px; flex-wrap: wrap; gap: 10px; }
+  .fighter { text-align: center; min-width: 150px; }
+  .fighter .avatar { font-size: 64px; display: block; }
+  .fighter .name { font-size: 17px; font-weight: bold; margin-top: 2px; }
+  .hero .avatar { animation: idle 1.6s ease-in-out infinite; }
+  .monster.hit .avatar { animation: shake 0.4s; }
+  @keyframes idle { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 50%{transform:translateX(8px);} 75%{transform:translateX(-5px);} }
+  .hpwrap { margin: 4px auto 2px; width: 160px; }
+  .hpbar { height: 15px; background: #f0e6f7; border-radius: 999px; overflow: hidden; border: 2px solid #e3d2f0; }
+  .hpfill { height: 100%; width: 100%; background: linear-gradient(90deg,#ff8fb1,#ff6b8f); border-radius: 999px; transition: width 0.3s ease; }
+  .herofill { height: 100%; width: 100%; background: linear-gradient(90deg,#7de0b0,#3fcb8e); border-radius: 999px; transition: width 0.3s ease; }
+  .hptext { font-size: 13px; color: #a07ea0; margin-top: 2px; }
+  .timer { width: 280px; margin: 8px auto 6px; }
+  .timerbar { height: 14px; background: #f0e6f7; border-radius: 999px; overflow: hidden; border: 2px solid #e3d2f0; }
+  .timerfill { height: 100%; width: 100%; background: linear-gradient(90deg,#ffd166,#ffb03a); border-radius: 999px; transition: width 1s linear; }
+  .timertext { font-size: 16px; color: #e0903a; font-weight: bold; margin-top: 2px; }
+  .hint { font-size: 20px; font-weight: bold; color: #e0648a; margin: 10px 0; min-height: 30px; }
+  .probs { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .prob { flex: 1; min-width: 140px; padding: 16px 10px; border-radius: 18px; cursor: pointer; background: #faf7ff; border: 3px solid #d9cdf0; font-size: 23px; font-weight: bold; color: #46365e; transition: transform 0.15s ease, border-color 0.15s ease; }
+  .prob:hover { transform: scale(1.05); border-color: #a78ae0; }
+  .prob:active { transform: scale(0.97); }
+
+  /* 数字迷宫 */
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 310px; margin: 18px auto; }
+  .cell { aspect-ratio: 1/1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 25px; background: #f0ecf8; border: 2px solid #e3dcf0; }
+  .cell.path { background: #eaf7ef; border-color: #bde5cf; }
+  .cell.path.visited { background: #d2f0df; }
+  .cell.wall { background: #5a4a75; border-color: #4c3e64; }
+  .cell.shake { animation: shake 0.4s; }
+  .dirbox { display: flex; gap: 10px; justify-content: center; margin: 8px 0; }
+  .dirbtn { min-width: 58px; padding: 9px; border-radius: 14px; font-size: 18px; font-weight: bold; background: #faf7ff; border: 3px solid #c9b8e8; color: #46365e; cursor: pointer; }
+  .dirbtn:hover:not(:disabled) { border-color: #a78ae0; transform: scale(1.06); }
+  .dirbtn:disabled { opacity: 0.28; cursor: not-allowed; }
+  .gate { font-size: 17px; font-weight: bold; color: #6a5b8c; margin-top: 4px; }
+  .expr { font-size: 28px; font-weight: bold; color: #46365e; margin: 8px 0; }
+  .choices { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .choice { min-width: 62px; padding: 11px; border-radius: 16px; cursor: pointer; font-size: 23px; font-weight: bold; background: #faf7ff; border: 3px solid #c9b8e8; color: #46365e; transition: transform 0.15s, border-color 0.15s; }
+  .choice:hover { transform: scale(1.08); border-color: #a78ae0; }
+
+  /* 图形魔法师 */
+  .stage { display: flex; gap: 24px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 20px 0; min-height: 190px; }
+  .tray { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .board { position: relative; background: #f4f8ff; border: 3px dashed #b9c7ea; border-radius: 12px; }
+  .piece { border-radius: 10px; cursor: grab; box-shadow: 0 5px 12px rgba(80,60,120,0.25); touch-action: none; user-select: none; }
+  .piece.square { width: 120px; height: 120px; background: linear-gradient(135deg,#ffb36b,#ff8f5e); }
+  .piece.rect { width: 60px; height: 120px; background: linear-gradient(135deg,#6fc3ff,#4f9df0); }
+  .piece.small { width: 60px; height: 60px; background: linear-gradient(135deg,#ffd36b,#ffb84f); }
+  .piece.wide { width: 120px; height: 60px; background: linear-gradient(135deg,#7de0b0,#3fcb8e); }
+  .piece.tile { width: 60px; height: 60px; background: linear-gradient(135deg,#c58bff,#8b5cf6); }
+  .board .silhouette { position: absolute; inset: 0; background: #d9e5ff; pointer-events: none; }
+  .anchor { position: absolute; }
+  .piece.dragging { cursor: grabbing; opacity: 0.92; }
+</style>
+</head>
+<body>
+  <span class="deco d1">⭐</span><span class="deco d2">✨</span><span class="deco d3">🪄</span><span class="deco d4">🎈</span><span class="deco d5">🔮</span>
+
+  <button id="muteBtn" class="mutebtn" title="背景音乐开关">🔊</button>
+  <div class="wrap">
+    <section id="hall">
+      <div class="head">
+        <span class="crown">🏰</span>
+        <h1>欢迎来到数学魔法学院</h1>
+        <div class="sub" style="font-size:20px; color:#7d6fa8; margin-top:12px;">选择一个模式，开始你的冒险吧！</div>
+      </div>
+      <div class="cards">
+        <div class="hallcard c1" data-screen="rpg"><span class="emoji">⚔️🛡️</span><span class="name">勇者打怪</span><span class="desc">练习计算</span><span class="go">点击进入 →</span></div>
+        <div class="hallcard c2" data-screen="maze"><span class="emoji">🔢🌀</span><span class="name">数字迷宫</span><span class="desc">练习逻辑与计算</span><span class="go">点击进入 →</span></div>
+        <div class="hallcard c3" data-screen="shape"><span class="emoji">🔺🪄</span><span class="name">图形魔法师</span><span class="desc">练习空间几何</span><span class="go">点击进入 →</span></div>
+      </div>
+      <div class="foot">三个小游戏已上线，点击卡片即可进入 ✨</div>
+    </section>
+
+    <section id="screen-rpg" class="hidden">
+      <div class="top"><button class="back">← 返回大厅</button><span>🏰 数学魔法学院</span></div>
+      <div class="card">
+        <div class="scorebar">
+          <span class="chip">⭐ 得分 <b id="score">0</b></span>
+          <span class="chip">🔥 连对 <b class="pink" id="combo">0</b></span>
+        </div>
+        <h1 style="font-size:27px; color:#7a5bb0; background:none;">⚔️ 勇者打怪</h1>
+        <div class="sub" style="margin-top:4px;">10 秒内选出正确答案，否则勇者会扣血！</div>
+        <div class="arena">
+          <div class="fighter hero"><span class="avatar">🧙</span><span class="name">勇者</span>
+            <div class="hpwrap"><div class="hpbar"><div class="herofill" id="herofill"></div></div><div class="hptext" id="herotext"></div></div>
+          </div>
+          <div class="fighter monster" id="monster"><span class="avatar">👹</span><span class="name">大怪物</span>
+            <div class="hpwrap"><div class="hpbar"><div class="hpfill" id="hpfill"></div></div><div class="hptext" id="hptext"></div></div>
+          </div>
+        </div>
+        <div class="timer">
+          <div class="timerbar"><div class="timerfill" id="timerfill"></div></div>
+          <div class="timertext">⏱ 倒计时 <span id="timerNum">10</span> 秒</div>
+        </div>
+        <div class="hint" id="hint"></div>
+        <div class="probs" id="probs"></div>
+        <div class="msg" id="msg"></div>
+      </div>
+    </section>
+
+    <section id="screen-maze" class="hidden">
+      <div class="top"><button class="back">← 返回大厅</button><span>🏰 数学魔法学院</span></div>
+      <div class="card">
+        <div class="scorebar">
+          <span class="chip">⭐ 得分 <b id="mazeScore">0</b></span>
+          <span class="chip">🔥 连对 <b class="pink" id="mazeCombo">0</b></span>
+          
+        </div>
+        <h1 style="font-size:27px; color:#7a5bb0; background:none;">🌀 数字迷宫</h1>
+        <div class="sub" style="margin-top:4px;">选对方向 + 答对题目，才能走到出口 🏆</div>
+        <div class="grid" id="grid"></div>
+        <div class="dirbox" id="dirbox"></div>
+        <div class="gate" id="gate"></div>
+        <div class="expr" id="expr"></div>
+        <div class="choices" id="choices"></div>
+        <div class="msg" id="mazeMsg"></div>
+      </div>
+    </section>
+
+    <section id="screen-shape" class="hidden">
+      <div class="top"><button class="back">← 返回大厅</button><span>🏰 数学魔法学院</span></div>
+      <div class="card">
+        <div class="scorebar">
+          <span class="chip">⭐ 得分 <b id="shapeScore">0</b></span>
+          
+        </div>
+        <h1 style="font-size:27px; color:#7a5bb0; background:none;">🪄 图形魔法师</h1>
+        <div class="sub" id="sub"></div>
+        <div class="stage">
+          <div class="tray" id="tray"></div>
+          <div class="board" id="board"></div>
+        </div>
+        <div class="msg" id="shapeMsg"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast hidden" id="comboToast"></div>
+  <div class="overlay hidden" id="rpgWin"><div class="box"><button class="closebtn" title="关闭">×</button><div class="big">🎉🏆🎉</div><h2>怪物被打倒啦！</h2><div class="stars" id="rpgStars"></div><div class="finalscore" id="rpgFinal"></div><button id="rpgWinBtn">再来一局</button></div></div>
+  <div class="overlay hidden" id="rpgFail"><div class="box"><button class="closebtn" title="关闭">×</button><div class="big">💀</div><h2>挑战失败！</h2><div class="finalscore">勇者的血量耗尽了……</div><button id="rpgFailBtn">再试一次</button></div></div>
+  <div class="overlay hidden" id="mazeWin"><div class="box"><button class="closebtn" title="关闭">×</button><div class="big">🏆🎉</div><h2>你走出迷宫啦！</h2><div class="finalscore" id="mazeFinal"></div><button id="mazeWinBtn">换张地图再走</button></div></div>
+  <div class="overlay hidden" id="shapeNext"><div class="box"><button class="closebtn" title="关闭">×</button><div class="big">🎉</div><h2 id="nextTitle"></h2><button id="shapeNextBtn">下一关</button></div></div>
+  <div class="overlay hidden" id="shapeAll"><div class="box"><button class="closebtn" title="关闭">×</button><div class="big">🏆✨</div><h2>全部拼图完成！</h2><div class="finalscore" id="allScore"></div><button id="shapeAllBtn">再玩一次</button></div></div>
+
+<script>
+function ri(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function genProblem(){
+  var op=ri(0,3), a, b, ans, expr;
+  if(op===0){ a=ri(20,79); b=ri(11,99-a); ans=a+b; expr=a+" + "+b; }
+  else if(op===1){ a=ri(30,99); b=ri(11,a-1); ans=a-b; expr=a+" − "+b; }
+  else if(op===2){ a=ri(2,9); b=ri(2,9); ans=a*b; expr=a+" × "+b; }
+  else { b=ri(2,9); var q=ri(2,9); a=b*q; ans=q; expr=a+" ÷ "+b; }
+  return { expr: expr, ans: ans };
+}
+function toast(text){
+  var t=document.getElementById("comboToast");
+  t.textContent=text;
+  t.classList.remove("hidden");
+  clearTimeout(toast._t);
+  toast._t=setTimeout(function(){ t.classList.add("hidden"); }, 900);
+}
+
+var audioCtx=null, musicTimer=null, musicIdx=0, musicOn=false, muted=false;
+var MELODY=[261.63,329.63,392.00,523.25,392.00,329.63,293.66,349.23,440.00,523.25,440.00,349.23];
+function initAudio(){ if(audioCtx) return; try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+function playTone(freq,dur,type,vol,when){
+  if(!audioCtx) return;
+  var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type||"sine"; o.frequency.value=freq;
+  o.connect(g); g.connect(audioCtx.destination);
+  var t=(when||audioCtx.currentTime);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol||0.1,t+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t); o.stop(t+dur+0.06);
+}
+function playCorrect(){ initAudio(); var t=audioCtx.currentTime; playTone(659.25,0.12,"sine",0.18,t); playTone(880.00,0.22,"sine",0.16,t+0.09); }
+function playWrong(){ initAudio(); playTone(220.00,0.22,"triangle",0.14); }
+function playWin(){ initAudio(); var t=audioCtx.currentTime; playTone(523.25,0.16,"sine",0.2,t); playTone(659.25,0.16,"sine",0.2,t+0.16); playTone(783.99,0.3,"sine",0.2,t+0.32); }
+function startMusic(){
+  if(muted) return;
+  initAudio();
+  if(audioCtx && audioCtx.state==="suspended"){ audioCtx.resume(); } if(musicOn) return;
+  musicOn=true; musicIdx=0;
+  document.getElementById("muteBtn").textContent="🔊";
+  playTone(MELODY[0],0.5,"sine",0.05);
+  musicTimer=setInterval(function(){
+    musicIdx=(musicIdx+1)%MELODY.length;
+    playTone(MELODY[musicIdx],0.5,"sine",0.05);
+  },620);
+}
+function stopMusic(){ musicOn=false; if(musicTimer){ clearInterval(musicTimer); musicTimer=null; } }
+function toggleMusic(){
+  muted=!muted;
+  if(muted){ stopMusic(); document.getElementById("muteBtn").textContent="🔇"; }
+  else { document.getElementById("muteBtn").textContent="🔊"; startMusic(); }
+}
+/* ============ 勇者打怪 ============ */
+(function(){
+  var hp=100, heroHp=100, target=0, busy=false, score=0, combo=0;
+  var DAMAGE=20, TIME=10, timerLeft=0, timerId=null;
+  function updateScore(){
+    document.getElementById("score").textContent=score;
+    document.getElementById("combo").textContent=combo;
+  }
+  function updateHp(){
+    document.getElementById("hpfill").style.width=Math.max(0,hp)+"%";
+    document.getElementById("hptext").textContent="HP："+Math.max(0,hp);
+    document.getElementById("herofill").style.width=Math.max(0,heroHp)+"%";
+    document.getElementById("herotext").textContent="HP："+Math.max(0,heroHp);
+  }
+  function updateTimer(){
+    document.getElementById("timerNum").textContent=timerLeft;
+    document.getElementById("timerfill").style.width=(timerLeft/TIME*100)+"%";
+  }
+  function startTimer(){
+    stopTimer();
+    timerLeft=TIME; updateTimer();
+    timerId=setInterval(function(){
+      timerLeft--; updateTimer();
+      if(timerLeft<=0){ timeout(); }
+    },1000);
+  }
+  function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+  function newRound(){
+    var correct=genProblem();
+    target=correct.ans;
+    var probs=[correct], tries=0;
+    while(probs.length<3 && tries<300){
+      tries++;
+      var p=genProblem();
+      var dup=false;
+      for(var i=0;i<probs.length;i++){ if(probs[i].ans===p.ans){ dup=true; } }
+      if(!dup){ probs.push(p); }
+    }
+    probs.sort(function(){ return Math.random()-0.5; });
+    var box=document.getElementById("probs");
+    box.innerHTML="";
+    for(var j=0;j<probs.length;j++){
+      (function(p){
+        var d=document.createElement("div");
+        d.className="prob"; d.textContent=p.expr+" = ?";
+        d.onclick=function(){ attack(p); };
+        box.appendChild(d);
+      })(probs[j]);
+    }
+    document.getElementById("hint").textContent="找出答案等于 "+target+" 的题目，攻击怪物！";
+    document.getElementById("msg").textContent="";
+    busy=false;
+    startTimer();
+  }
+  function attack(p){
+    if(busy) return;
+    if(p.ans===target){
+      busy=true; stopTimer(); playCorrect();
+      combo++;
+      score += 10 + (combo-1)*5;
+      updateScore();
+      if(combo>=2){ toast("连对 ×"+combo+"！奖励加分 🔥"); }
+      hp-=DAMAGE; updateHp();
+      var mon=document.getElementById("monster");
+      mon.classList.remove("hit"); void mon.offsetWidth; mon.classList.add("hit");
+      if(hp<=0){
+        document.getElementById("msg").textContent="命中！造成 "+DAMAGE+" 点伤害 ⚔️";
+        win();
+        return;
+      }
+      document.getElementById("msg").textContent="命中！造成 "+DAMAGE+" 点伤害 ⚔️";
+      setTimeout(newRound, 700);
+    } else {
+      combo=0; updateScore();
+      playWrong(); document.getElementById("msg").textContent="打偏了！连对断了，再想想 💦（倒计时继续）";
+    }
+  }
+  function timeout(){
+    stopTimer();
+    playWrong(); heroHp-=20; updateHp();
+    if(heroHp<=0){ fail(); return; }
+    document.getElementById("msg").textContent="⏰ 时间到！勇者受到 20 点伤害！";
+    setTimeout(newRound, 900);
+  }
+  function stars(){
+    if(heroHp>=100){ return 3; }
+    if(heroHp>=50){ return 2; }
+    return 1;
+  }
+  function win(){
+    var s=stars();
+    document.getElementById("rpgStars").textContent = s===3?"⭐⭐⭐":(s===2?"⭐⭐":"⭐");
+    document.getElementById("rpgFinal").textContent="最终得分："+score+" 分 · 勇者剩余血量 "+Math.max(0,heroHp);
+    playWin(); document.getElementById("rpgWin").classList.remove("hidden");
+  }
+  function fail(){
+    playWrong(); document.getElementById("rpgFail").classList.remove("hidden");
+  }
+  function start(){
+    document.getElementById("rpgWin").classList.add("hidden");
+    document.getElementById("rpgFail").classList.add("hidden");
+    hp=100; heroHp=100; score=0; combo=0;
+    updateScore(); updateHp(); newRound();
+  }
+  document.getElementById("rpgWinBtn").addEventListener("click", start);
+  document.getElementById("rpgFailBtn").addEventListener("click", start);
+  window.initRpg = start; window.stopRpg = stopTimer;
+})();
+
+/* ============ 数字迷宫（程序化生成） ============ */
+(function(){
+  var walls=[], pos=[0,0], score=0, combo=0, pending=null, curAns=0;
+  var DIRS=[["上",-1,0,"top"],["下",1,0,"bottom"],["左",0,-1,"left"],["右",0,1,"right"]];
+  function inB(r,c){ return r>=0 && r<5 && c>=0 && c<5; }
+  function opp(d){ return d==="top"?"bottom":(d==="bottom"?"top":(d==="left"?"right":"left")); }
+  function updateScore(){
+    document.getElementById("mazeScore").textContent=score;
+    document.getElementById("mazeCombo").textContent=combo;
+  }
+  function genMaze(){
+    walls=[];
+    for(var r=0;r<5;r++){ var row=[]; for(var c=0;c<5;c++){ row.push({top:true,right:true,bottom:true,left:true}); } walls.push(row); }
+    var visited=[];
+    for(var r2=0;r2<5;r2++){ visited.push([false,false,false,false,false]); }
+    var stack=[[0,0]]; visited[0][0]=true;
+    while(stack.length){
+      var cur=stack[stack.length-1]; var r=cur[0], c=cur[1];
+      var nb=[];
+      for(var i=0;i<DIRS.length;i++){
+        var nr=r+DIRS[i][1], nc=c+DIRS[i][2];
+        if(inB(nr,nc) && !visited[nr][nc]){ nb.push([nr,nc,DIRS[i][3]]); }
+      }
+      if(nb.length===0){ stack.pop(); continue; }
+      var pick=nb[ri(0,nb.length-1)];
+      var nr=pick[0], nc=pick[1], dir=pick[2];
+      walls[r][c][dir]=false;
+      walls[nr][nc][opp(dir)]=false;
+      visited[nr][nc]=true;
+      stack.push([nr,nc]);
+    }
+  }
+  function buildGrid(){
+    var grid=document.getElementById("grid");
+    grid.innerHTML="";
+    for(var r=0;r<5;r++){
+      for(var c=0;c<5;c++){
+        var d=document.createElement("div");
+        d.className="cell path";
+        d.id="cell-"+r+"-"+c;
+        d.style.borderTop = walls[r][c].top ? "4px solid #5a4a75" : "2px solid #bde5cf";
+        d.style.borderRight = walls[r][c].right ? "4px solid #5a4a75" : "2px solid #bde5cf";
+        d.style.borderBottom = walls[r][c].bottom ? "4px solid #5a4a75" : "2px solid #bde5cf";
+        d.style.borderLeft = walls[r][c].left ? "4px solid #5a4a75" : "2px solid #bde5cf";
+        if(r===4&&c===4){ d.textContent="🏆"; }
+        grid.appendChild(d);
+      }
+    }
+  }
+  function draw(){
+    for(var r=0;r<5;r++){
+      for(var c=0;c<5;c++){
+        var el=document.getElementById("cell-"+r+"-"+c);
+        el.textContent = (r===4&&c===4) ? "🏆" : "";
+      }
+    }
+    document.getElementById("cell-"+pos[0]+"-"+pos[1]).textContent="🧙";
+  }
+  function markVisited(){
+    document.getElementById("cell-"+pos[0]+"-"+pos[1]).classList.add("visited");
+  }
+  function renderDir(){
+    var box=document.getElementById("dirbox");
+    box.innerHTML="";
+    for(var i=0;i<DIRS.length;i++){
+      (function(label,dr,dc,dir){
+        var nr=pos[0]+dr, nc=pos[1]+dc;
+        var open = inB(nr,nc) && !walls[pos[0]][pos[1]][dir];
+        var b=document.createElement("button");
+        b.className="dirbtn"; b.textContent=label;
+        b.disabled=!open;
+        b.onclick=function(){ chooseDir(dr,dc); };
+        box.appendChild(b);
+      })(DIRS[i][0],DIRS[i][1],DIRS[i][2],DIRS[i][3]);
+    }
+  }
+  function chooseDir(dr,dc){
+    if(pending) return;
+    pending=[dr,dc];
+    var g=genProblem();
+    curAns=g.ans;
+    var choices=[g.ans], tries=0;
+    while(choices.length<4 && tries<400){
+      tries++;
+      var cand=g.ans+ri(-8,8);
+      if(cand<=0 || choices.indexOf(cand)>=0){ continue; }
+      choices.push(cand);
+    }
+    choices.sort(function(){ return Math.random()-0.5; });
+    document.getElementById("gate").textContent="答对才能前进 → 方向："+dirName(dr,dc);
+    document.getElementById("expr").textContent=g.expr+" = ?";
+    var box=document.getElementById("choices");
+    box.innerHTML="";
+    for(var i=0;i<choices.length;i++){
+      (function(v){
+        var b=document.createElement("button");
+        b.className="choice"; b.textContent=v;
+        b.onclick=function(){ answer(v); };
+        box.appendChild(b);
+      })(choices[i]);
+    }
+    document.getElementById("mazeMsg").textContent="";
+  }
+  function dirName(dr,dc){
+    if(dr===-1){ return "上"; } if(dr===1){ return "下"; }
+    if(dc===-1){ return "左"; } return "右";
+  }
+  function answer(v){
+    if(v===curAns){
+      combo++;
+      score += 10 + (combo-1)*5;
+      updateScore();
+      if(combo>=2){ toast("连对 ×"+combo+"！奖励加分 🔥"); }
+      pos=[pos[0]+pending[0], pos[1]+pending[1]];
+      pending=null;
+      draw(); markVisited();
+      document.getElementById("gate").textContent="";
+      document.getElementById("expr").textContent="";
+      document.getElementById("choices").innerHTML="";
+      if(pos[0]===4 && pos[1]===4){
+        playWin();
+        document.getElementById("mazeMsg").textContent="🎉 你找到出口了！";
+        document.getElementById("mazeFinal").textContent="最终得分："+score+" 分";
+        setTimeout(function(){ document.getElementById("mazeWin").classList.remove("hidden"); }, 450);
+        return;
+      }
+      playCorrect();
+      document.getElementById("mazeMsg").textContent="✅ 前进成功，继续选择方向！";
+      renderDir();
+    } else {
+      combo=0; updateScore();
+      playWrong();
+      var el=document.getElementById("cell-"+pos[0]+"-"+pos[1]);
+      el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+      document.getElementById("mazeMsg").textContent="💥 答错了，碰壁！再试一次。";
+    }
+  }
+  function start(){
+    document.getElementById("mazeWin").classList.add("hidden");
+    genMaze();
+    pos=[0,0]; score=0; combo=0; pending=null;
+    updateScore();
+    buildGrid(); draw(); markVisited();
+    document.getElementById("gate").textContent="";
+    document.getElementById("expr").textContent="";
+    document.getElementById("choices").innerHTML="";
+    document.getElementById("mazeMsg").textContent="选择一个方向前进吧！";
+    renderDir();
+  }
+  document.getElementById("mazeWinBtn").addEventListener("click", start);
+  window.initMaze = start;
+})();
+
+/* ============ 图形魔法师（程序化生成） ============ */
+(function(){
+  var U=60, mode="rect", score=0, occ=[], placedCells=0, filled={}, board, tray, unitsW=0, unitsH=0, current=null;
+  var COLORS=["linear-gradient(135deg,#ffb36b,#ff8f5e)","linear-gradient(135deg,#6fc3ff,#4f9df0)","linear-gradient(135deg,#ffd36b,#ffb84f)","linear-gradient(135deg,#7de0b0,#3fcb8e)","linear-gradient(135deg,#c58bff,#8b5cf6)"];
+  var POLY=[
+    { name:"拼出一个平行四边形", boardW:120, boardH:60, boardClip:"polygon(0 0,100% 0,75% 100%,0 100%)",
+      slots:[{shape:"para1",x:0,y:0,w:60,h:60},{shape:"para2",x:60,y:0,w:60,h:60}],
+      pieces:[{shape:"para1",w:1,h:1,clip:"polygon(0 0,100% 0,100% 100%,0 100%)"},{shape:"para2",w:1,h:1,clip:"polygon(0 0,100% 0,50% 100%,0 100%)"}] },
+    { name:"拼出一个六边形", boardW:120, boardH:60, boardClip:"polygon(12.5% 0,87.5% 0,100% 100%,0 100%)",
+      slots:[{shape:"hex1",x:0,y:0,w:60,h:60},{shape:"hex2",x:60,y:0,w:60,h:60}],
+      pieces:[{shape:"hex1",w:1,h:1,clip:"polygon(25% 0,100% 0,100% 100%,0 100%)"},{shape:"hex2",w:1,h:1,clip:"polygon(0 0,75% 0,100% 100%,0 100%)"}] },
+    { name:"拼出一个大三角形", boardW:120, boardH:60, boardClip:"polygon(50% 0,100% 100%,0 100%)",
+      slots:[{shape:"tri1",x:0,y:0,w:60,h:60},{shape:"tri2",x:60,y:0,w:60,h:60}],
+      pieces:[{shape:"tri1",w:1,h:1,clip:"polygon(100% 0,0 100%,100% 100%)"},{shape:"tri2",w:1,h:1,clip:"polygon(0 0,100% 100%,0 100%)"}] }
+  ];
+  function genRect(){
+    var sizes=[[3,2],[4,2],[2,2],[3,3],[2,3],[4,3]];
+    var dim=sizes[ri(0,sizes.length-1)];
+    var W=dim[0], H=dim[1];
+    var rects=[{x:0,y:0,w:W,h:H}];
+    var target=ri(2,4), guard=0;
+    while(rects.length<target && guard<60){
+      guard++;
+      var cand=[];
+      for(var i=0;i<rects.length;i++){ if(rects[i].w>1||rects[i].h>1){ cand.push(i); } }
+      if(cand.length===0) break;
+      var idx=cand[ri(0,cand.length-1)];
+      var r=rects[idx];
+      var canW=r.w>1, canH=r.h>1;
+      var dir=(canW&&canH)?ri(0,1):(canW?0:1);
+      rects.splice(idx,1);
+      if(dir===0){
+        var sw=ri(1,r.w-1);
+        rects.push({x:r.x,y:r.y,w:sw,h:r.h});
+        rects.push({x:r.x+sw,y:r.y,w:r.w-sw,h:r.h});
+      } else {
+        var sh=ri(1,r.h-1);
+        rects.push({x:r.x,y:r.y,w:r.w,h:sh});
+        rects.push({x:r.x,y:r.y+sh,w:r.w,h:r.h-sh});
+      }
+    }
+    var pieces=[];
+    for(var p=0;p<rects.length;p++){ pieces.push({w:rects[p].w,h:rects[p].h,color:COLORS[p%COLORS.length]}); }
+    var nm=(W===H)?(W>=3?"拼出一个大正方形":"拼出一个正方形"):"拼出一个长方形";
+    return {type:"rect", name:nm, unitsW:W, unitsH:H, pieces:pieces};
+  }
+  function genPoly(){
+    var pz=POLY[ri(0,POLY.length-1)];
+    return {type:"poly", name:pz.name, boardW:pz.boardW, boardH:pz.boardH, boardClip:pz.boardClip, slots:pz.slots, pieces:pz.pieces};
+  }
+  function genPuzzle(){ return (ri(0,99)<30) ? genPoly() : genRect(); }
+  function updateScore(){ document.getElementById("shapeScore").textContent=score; }
+  function levelComplete(){
+    score+=50; updateScore(); playWin();
+    document.getElementById("shapeMsg").textContent="太棒了，这一关拼好啦！";
+    setTimeout(function(){
+      document.getElementById("nextTitle").textContent="拼图完成！";
+      document.getElementById("shapeNext").classList.remove("hidden");
+    },600);
+  }
+  function bindDrag(el){
+    el.addEventListener("pointerdown", function(e){
+      if(el.classList.contains("placed")) return;
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      var r=el.getBoundingClientRect();
+      el.dx=e.clientX-r.left; el.dy=e.clientY-r.top;
+      el.style.position="fixed"; el.style.left=r.left+"px"; el.style.top=r.top+"px"; el.style.zIndex=50;
+      el.classList.add("dragging");
+    });
+    el.addEventListener("pointermove", function(e){
+      if(!el.classList.contains("dragging")) return;
+      el.style.left=(e.clientX-el.dx)+"px"; el.style.top=(e.clientY-el.dy)+"px";
+    });
+    el.addEventListener("pointerup", function(e){
+      if(!el.classList.contains("dragging")) return;
+      el.classList.remove("dragging");
+      var br=board.getBoundingClientRect();
+      var desiredLeft = e.clientX - el.dx - br.left;
+      var desiredTop = e.clientY - el.dy - br.top;
+      if(mode==="rect"){
+        var col = Math.round(desiredLeft/U);
+        var row = Math.round(desiredTop/U);
+        var wu=parseInt(el.getAttribute("data-w"),10);
+        var hu=parseInt(el.getAttribute("data-h"),10);
+        var ok = col>=0 && row>=0 && col+wu<=unitsW && row+hu<=unitsH;
+        if(ok){
+          for(var r=row; r<row+hu && ok; r++){
+            for(var c=col; c<col+wu && ok; c++){ if(occ[r][c]){ ok=false; } }
+          }
+        }
+        if(ok){
+          for(var r2=row; r2<row+hu; r2++){ for(var c2=col; c2<col+wu; c2++){ occ[r2][c2]=true; } }
+          board.appendChild(el);
+          el.style.position="absolute"; el.style.left=(col*U)+"px"; el.style.top=(row*U)+"px"; el.style.zIndex=5;
+          el.classList.add("placed");
+          score+=10; updateScore(); placedCells += wu*hu;
+          if(placedCells===unitsW*unitsH){ levelComplete(); }
+          else { playCorrect(); document.getElementById("shapeMsg").textContent="放对了一块，继续 ✨"; }
+        } else {
+          el.style.position=""; el.style.left=""; el.style.top=""; el.style.zIndex="";
+          playWrong();
+          document.getElementById("shapeMsg").textContent="这里放不下哦，再挪一挪 💦";
+        }
+      } else {
+        var shape=el.getAttribute("data-shape");
+        var target=null;
+        var anchors=board.querySelectorAll(".anchor");
+        for(var k=0;k<anchors.length;k++){
+          var s=anchors[k];
+          if(s.getAttribute("data-shape")!==shape) continue;
+          if(filled[s.id]) continue;
+          var sx=parseInt(s.style.left,10), sy=parseInt(s.style.top,10);
+          if(Math.abs(desiredLeft-sx)<45 && Math.abs(desiredTop-sy)<45){ target=s; break; }
+        }
+        if(target){
+          board.appendChild(el);
+          el.style.position="absolute"; el.style.left=target.style.left; el.style.top=target.style.top; el.style.zIndex=5;
+          el.classList.add("placed");
+          filled[target.id]=true;
+          score+=10; updateScore();
+          var total=board.querySelectorAll(".anchor").length;
+          if(Object.keys(filled).length===total){ levelComplete(); }
+          else { playCorrect(); document.getElementById("shapeMsg").textContent="放对了一块，继续 ✨"; }
+        } else {
+          el.style.position=""; el.style.left=""; el.style.top=""; el.style.zIndex="";
+          playWrong();
+          document.getElementById("shapeMsg").textContent="这里放不下哦，再挪一挪 💦";
+        }
+      }
+    });
+  }
+  function loadLevel(){
+    var pz=current;
+    mode=pz.type||"rect";
+    board.innerHTML=""; tray.innerHTML="";
+    document.getElementById("sub").textContent=pz.name+"：拖动图形填满目标框";
+    if(mode==="rect"){
+      unitsW=pz.unitsW; unitsH=pz.unitsH; placedCells=0;
+      occ=[];
+      for(var r=0;r<unitsH;r++){ var row=[]; for(var c=0;c<unitsW;c++){ row.push(false); } occ.push(row); }
+      board.style.width=(unitsW*U)+"px"; board.style.height=(unitsH*U)+"px";
+    } else {
+      filled={};
+      board.style.width=pz.boardW+"px"; board.style.height=pz.boardH+"px";
+      if(pz.boardClip){ var sv=document.createElement("div"); sv.className="silhouette"; sv.style.clipPath=pz.boardClip; board.appendChild(sv); }
+      for(var s=0;s<pz.slots.length;s++){
+        var sl=pz.slots[s];
+        var a=document.createElement("div");
+        a.className="anchor"; a.id="anc"+s;
+        a.setAttribute("data-shape",sl.shape);
+        a.style.left=sl.x+"px"; a.style.top=sl.y+"px";
+        a.style.width=sl.w+"px"; a.style.height=sl.h+"px";
+        board.appendChild(a);
+      }
+    }
+    for(var p=0;p<pz.pieces.length;p++){
+      var pc2=pz.pieces[p];
+      var el=document.createElement("div");
+      el.className="piece";
+      el.style.width=(pc2.w*U)+"px"; el.style.height=(pc2.h*U)+"px";
+      el.style.background=(pc2.color||COLORS[p%COLORS.length]);
+      if(pc2.shape){ el.setAttribute("data-shape",pc2.shape); }
+      el.setAttribute("data-w",pc2.w); el.setAttribute("data-h",pc2.h);
+      if(pc2.clip){ el.style.clipPath=pc2.clip; }
+      tray.appendChild(el);
+      bindDrag(el);
+    }
+    document.getElementById("shapeMsg").textContent="";
+  }
+  function nextLevel(){
+    document.getElementById("shapeNext").classList.add("hidden");
+    current=genPuzzle();
+    loadLevel();
+  }
+  function start(){
+    document.getElementById("shapeNext").classList.add("hidden");
+    document.getElementById("shapeAll").classList.add("hidden");
+    score=0; updateScore();
+    current=genPuzzle();
+    loadLevel();
+  }
+  document.getElementById("shapeNextBtn").addEventListener("click", nextLevel);
+  document.getElementById("shapeAllBtn").addEventListener("click", start);
+  board=document.getElementById("board");
+  tray=document.getElementById("tray");
+  window.initShape = start;
+})();
+
+/* ============ 大厅切换 ============ */
+function showScreen(name){ if(window.stopRpg){ window.stopRpg(); } startMusic();
+  var ids=["hall","screen-rpg","screen-maze","screen-shape"];
+  for(var i=0;i<ids.length;i++){ document.getElementById(ids[i]).classList.add("hidden"); }
+  var overlays=["rpgWin","rpgFail","mazeWin","shapeNext","shapeAll"];
+  for(var j=0;j<overlays.length;j++){ document.getElementById(overlays[j]).classList.add("hidden"); }
+  var map={hall:"hall", rpg:"screen-rpg", maze:"screen-maze", shape:"screen-shape"};
+  document.getElementById(map[name]).classList.remove("hidden");
+  if(name==="rpg"){ window.initRpg(); }
+  if(name==="maze"){ window.initMaze(); }
+  if(name==="shape"){ window.initShape(); }
+}
+var closes=document.querySelectorAll(".closebtn");
+for(var k=0;k<closes.length;k++){ closes[k].addEventListener("click", function(){ this.closest(".overlay").classList.add("hidden"); }); }
+document.getElementById("muteBtn").addEventListener("click", toggleMusic);
+var hcards=document.querySelectorAll(".hallcard");
+for(var i=0;i<hcards.length;i++){
+  hcards[i].addEventListener("click", function(){ showScreen(this.getAttribute("data-screen")); });
+}
+var backs=document.querySelectorAll(".back");
+for(var j=0;j<backs.length;j++){
+  backs[j].addEventListener("click", function(){ showScreen("hall"); });
+}
+showScreen("hall");
+</script>
+</body>
+</html>
